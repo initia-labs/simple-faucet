@@ -136,10 +136,7 @@ func main() {
 	}
 
 	privKey = hd.Secp256k1.Generate()(derivedPriv)
-	pubk := privKey.PubKey()
-	logger.Errorf("Public : %s",hex.EncodeToString( pubk.Address()))
-	logger.Errorf("Private : %s", hex.EncodeToString(privKey.Bytes()))
-
+	pubk := privKey.PubKey() 
 
 	address, err = bech32.ConvertAndEncode("init", pubk.Address())
 	if err != nil {
