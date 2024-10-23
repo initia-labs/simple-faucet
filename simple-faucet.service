@@ -1,0 +1,25 @@
+
+cat <<EOF > /etc/systemd/system/faucet.service
+[Unit]
+Description=Initia Faucet Service
+After=syslog.target
+[Service]
+User=root
+WorkingDirectory=/root/simple-faucet
+ExecStart=/bin/go run ./cmd/faucet/ kamigotchi.config.json
+
+Restart=on-failure
+RestartSec=4
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=faucet
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+
+systemctl daemon-reload
+systemctl enable faucet
+systemctl start faucet
