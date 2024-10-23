@@ -22,7 +22,8 @@ import (
 	"github.com/initia-labs/simple-faucet/config"
 )
 
-const Denom = "uinit"
+// ONYX
+const Denom = "evm/9D9c32921575Fd98e67E27C0189ED4b750Cb17C5"
 
 // BroadcastReq defines a tx broadcasting request.
 type BroadcastReq struct {

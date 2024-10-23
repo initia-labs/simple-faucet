@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/initia-labs/simple-faucet/config"
@@ -17,6 +19,20 @@ import (
 type Claim struct {
 	Address string `json:"address"`
 }
+
+func ethToBech32(hexAddress, prefix string) (string, error) {
+	cleanHex := strings.ToLower(strings.TrimPrefix(hexAddress, "0x"))
+	addrBytes, err := hex.DecodeString(cleanHex)
+	if err != nil {
+			return "", fmt.Errorf("invalid hex address: %v", err)
+	}
+	bech32Addr, err := bech32.ConvertAndEncode(prefix, addrBytes)
+	if err != nil {
+			return "", fmt.Errorf("bech32 conversion error: %v", err)
+	}
+	return bech32Addr, nil
+}
+
 
 func claimHandler(dripMutex *sync.Mutex, db *leveldb.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, request *http.Request) {
@@ -37,8 +53,15 @@ func claimHandler(dripMutex *sync.Mutex, db *leveldb.DB) http.HandlerFunc {
 		dripConfig := config.GetConfig().DripConfig
 		amount := dripConfig.Amount * MicroUnit
 
+		bechAddress, ethToBechErr := ethToBech32(claim.Address, "init")
+		if ethToBechErr != nil {
+			writeErrorResponse(w, ethToBechErr)
+			return
+		}
+
+		logger.Infof("Got: %s Into %s", claim.Address, bechAddress)
 		// make sure address is bech32
-		readableAddress, decodedAddress, decodeErr := bech32.DecodeAndConvert(claim.Address)
+		readableAddress, decodedAddress, decodeErr := bech32.DecodeAndConvert(bechAddress)
 		if decodeErr != nil {
 			writeErrorResponse(w, decodeErr)
 			return
