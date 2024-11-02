@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,7 +73,9 @@ func newConfig() Config {
 			if restURL == "" {
 				logger.Panicf("REST_URL variable is required")
 			}
-			return restURL
+
+			// NOTE: remove trailing slash from the rest url as a workaround for grpc-gateway route mismatch
+			return strings.TrimRight(restURL, "/")
 		}(),
 		ChainID: func() string {
 			chainID := viper.GetString(chainIDVar)
