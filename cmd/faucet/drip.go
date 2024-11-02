@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -101,8 +102,13 @@ func drip(recipient sdk.AccAddress, amount int64, fee sdk.Coins) (string, error)
 	}
 
 	// broadcast
-	url := fmt.Sprintf("%v/cosmos/tx/v1beta1/txs", config.GetConfig().RestURL)
-	response, err := http.Post(url, "application/json", bytes.NewReader(txBz))
+	// url := fmt.Sprintf("%v/cosmos/tx/v1beta1/txs", config.GetConfig().RestURL)
+	rpcURL, err := url.JoinPath(config.GetConfig().RestURL, "/cosmos/tx/v1beta1/txs")
+	if err != nil {
+		return "", err
+	}
+
+	response, err := http.Post(rpcURL, "application/json", bytes.NewReader(txBz))
 	if err != nil {
 		return "", err
 	}
